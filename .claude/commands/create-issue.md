@@ -46,6 +46,14 @@ If the user responds with "y" or "ok":
 
 1. Use `gh issue create` command to create the issue
 2. Display the created issue URL to the user
+3. Display the following message to guide the user to the next step:
+
+```
+次のカスタムコマンドを実行してください
+/implement-issue {作成したURL}
+```
+
+Replace `{作成したURL}` with the actual issue URL that was created.
 
 If the user provides feedback, incorporate their changes and show the preview again.
 
