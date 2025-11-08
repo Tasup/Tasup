@@ -11,8 +11,9 @@
       "Bash(tree:*)",
       "Skill(update-issue-status-from-todo-to-in-progress)",
       "Skill(auto-update-issue-status)",
-      "Bash(cat:*)",
-      "Bash(git checkout:*)"
+      "Skill(update-parent-issue-status)",
+      "Bash(git checkout:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
