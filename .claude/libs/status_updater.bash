@@ -47,45 +47,115 @@ update_issue_status() {
     return 0
   fi
 
-  # プロジェクトアイテムのノードを抽出（簡易的なJSONパース）
-  # 注: 本来はjqを使うべきですが、依存を減らすためgrepとsedで処理
+  # GraphQL APIを使用して詳細なプロジェクト情報を取得
   local has_updates=false
+  local graphql_data
+  graphql_data=$(gh api graphql -f query="
+    query {
+      repository(owner: \"${owner}\", name: \"${repo}\") {
+        issue(number: ${issue_number}) {
+          projectItems(first: 10) {
+            nodes {
+              id
+              project {
+                id
+                title
+              }
+              fieldValueByName(name: \"Status\") {
+                ... on ProjectV2ItemFieldSingleSelectValue {
+                  field {
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      options {
+                        id
+                        name
+                      }
+                    }
+                  }
+                  optionId
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  " 2>&1)
 
-  # プロジェクトアイテムIDとプロジェクトIDを抽出
-  # JSONから "id": "PVTI_xxx" のようなパターンを探す
-  local project_item_ids
-  project_item_ids=$(echo "${projects_data}" | grep -o '"id": "PVTI_[^"]*"' | sed 's/"id": "\([^"]*\)"/\1/')
-
-  if [[ -z "${project_item_ids}" ]]; then
-    echo "エラー: プロジェクトアイテム情報の解析に失敗しました。" >&2
+  if [[ $? -ne 0 ]]; then
+    echo "エラー: プロジェクト情報の取得に失敗しました: ${graphql_data}" >&2
     return 1
   fi
 
-  # 各プロジェクトアイテムについて処理
-  # fieldValuesセクションから現在のステータス値を取得
-  # "fieldValues"の後の最初の "name" フィールドが現在の値
-  local current_status=""
-  current_status=$(echo "${projects_data}" | grep -A 5 '"fieldValues"' | grep -m 1 '"name":' | sed 's/.*"name": "\([^"]*\)".*/\1/')
+  # 現在のステータスを取得
+  local current_status
+  current_status=$(echo "${graphql_data}" | grep -o '"name":"[^"]*"' | tail -1 | sed 's/"name":"\([^"]*\)"/\1/')
 
   if [[ -z "${current_status}" ]]; then
     echo "警告: 現在のステータスを取得できませんでした。" >&2
-    current_status="Unknown"
+    return 1
   fi
 
-  # 現在のステータスに基づいて処理
-  if [[ "${current_status}" == "In Progress" || "${current_status}" == "IN_PROGRESS" ]]; then
-    echo "情報: Issueのステータスは既に「In Progress」です。更新をスキップします。"
-    return 0
-  elif [[ "${current_status}" == "Todo" || "${current_status}" == "TODO" ]]; then
-    echo "情報: Issueのステータスを「Todo」から「In Progress」に更新します。"
+  echo "情報: 現在のステータス: ${current_status}"
 
-    # 注: 実際のステータス更新は、プロジェクトID、アイテムID、フィールドID、オプションIDが必要
-    # ここでは簡略化のため、ステータスフラグのみ返す
-    has_updates=true
+  # 現在のステータスに基づいて処理
+  if [[ "${current_status}" == "In progress" || "${current_status}" == "IN_PROGRESS" ]]; then
+    echo "情報: Issueのステータスは既に「In progress」です。更新をスキップします。"
+    return 0
+  elif [[ "${current_status}" == "Todo" || "${current_status}" == "TODO" || "${current_status}" == "Backlog" || "${current_status}" == "BACKLOG" || "${current_status}" == "Ready" || "${current_status}" == "READY" ]]; then
+    echo "情報: Issueのステータスを「${current_status}」から「In progress」に更新します。"
+
+    # プロジェクトアイテムID、フィールドID、In progressオプションIDを取得
+    local item_id field_id in_progress_option_id
+    item_id=$(echo "${graphql_data}" | grep -o '"id":"PVTI_[^"]*"' | head -1 | sed 's/"id":"\([^"]*\)"/\1/')
+    field_id=$(echo "${graphql_data}" | grep -o '"id":"PVTSSF_[^"]*"' | head -1 | sed 's/"id":"\([^"]*\)"/\1/')
+
+    # "In progress"のオプションIDを検索
+    in_progress_option_id=$(echo "${graphql_data}" | grep -o '{"id":"[^"]*","name":"In progress"}' | grep -o '"id":"[^"]*"' | sed 's/"id":"\([^"]*\)"/\1/')
+
+    if [[ -z "${item_id}" || -z "${field_id}" || -z "${in_progress_option_id}" ]]; then
+      echo "エラー: 必要なID情報の取得に失敗しました。" >&2
+      echo "  item_id: ${item_id}" >&2
+      echo "  field_id: ${field_id}" >&2
+      echo "  in_progress_option_id: ${in_progress_option_id}" >&2
+      return 1
+    fi
+
+    # GraphQL mutationを実行してステータスを更新
+    local mutation_result
+    mutation_result=$(gh api graphql -f query="
+      mutation {
+        updateProjectV2ItemFieldValue(
+          input: {
+            projectId: \"$(echo "${graphql_data}" | grep -o '"id":"PVT_[^"]*"' | head -1 | sed 's/"id":"\([^"]*\)"/\1/')\"
+            itemId: \"${item_id}\"
+            fieldId: \"${field_id}\"
+            value: {
+              singleSelectOptionId: \"${in_progress_option_id}\"
+            }
+          }
+        ) {
+          projectV2Item {
+            id
+          }
+        }
+      }
+    " 2>&1)
+
+    if [[ $? -eq 0 ]]; then
+      echo "成功: ステータスを「In progress」に更新しました。"
+      has_updates=true
+    else
+      echo "エラー: ステータスの更新に失敗しました: ${mutation_result}" >&2
+      return 1
+    fi
+  else
+    echo "情報: 現在のステータス「${current_status}」からの更新はサポートされていません。"
+    return 0
   fi
 
   if [[ "${has_updates}" == "true" ]]; then
-    echo "成功: ステータスを更新しました。"
     return 0
   else
     echo "情報: 更新可能なプロジェクトが見つかりませんでした。"
