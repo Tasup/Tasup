@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Tasupは、GitHub Projects V2とGitHub Issuesの統合を管理するためのClaude Code設定リポジトリです。主にGitHub CLIコマンドを使用して、Issueのステータスを自動的に更新するワークフローを提供します。
+Tasupは、GitHub Projects V2とGitHub Issuesの統合を管理するためのClaude Code設定リポジトリ。主にGitHub CLIコマンドを使用して、Issueのステータスを自動的に更新するワークフローを提供。
 
 ## Common Commands
 
@@ -40,13 +40,13 @@ git push
 
 ### Claude Code Custom Commands & Skills
 
-このリポジトリは以下のClaude Code拡張機能を提供します：
+このリポジトリは以下のClaude Code拡張機能を提供：
 
 #### Slash Command: `/issue-progress`
 
 Location: `.claude/commands/issue-progress.md`
 
-GitHub IssueのステータスをGitHub Projects V2で「In progress」に更新するコマンド。GraphQL APIとgh CLIを組み合わせて、以下のプロセスで動作します：
+GitHub IssueのステータスをGitHub Projects V2で「In progress」に更新するコマンド。GraphQL APIとgh CLIを組み合わせて、以下のプロセスで動作：
 
 1. Issue URLから情報を抽出
 2. GraphQL APIでプロジェクト情報を取得（item_id, project_id, field_id, option_id）
@@ -59,11 +59,11 @@ GitHub IssueのステータスをGitHub Projects V2で「In progress」に更新
 
 Location: `.claude/skills/update-issue-status-from-todo-to-in-progress/SKILL.md`
 
-GitHub IssueのステータスをTODOからIN_PROGRESSに更新するスキル。7ステップのプロセスで実装されており、エラーハンドリングと検証を含みます。
+GitHub IssueのステータスをTODOからIN_PROGRESSに更新するスキル。7ステップのプロセスで実装されており、エラーハンドリングと検証を含む。
 
 ### 承認済みコマンド
 
-`.claude/settings.local.json`で以下のコマンドが自動承認されています：
+`.claude/settings.local.json`で以下のコマンドを自動承認：
 
 - `Bash(sed:*)` - テキスト処理
 - `Bash(gh:*)` - GitHub CLI操作
@@ -73,7 +73,7 @@ GitHub IssueのステータスをTODOからIN_PROGRESSに更新するスキル�
 
 ## GitHub Projects V2 Integration
 
-このリポジトリの主な目的は、GitHub Projects V2のステータス管理を自動化することです。
+このリポジトリの主な目的は、GitHub Projects V2のステータス管理を自動化。
 
 ### 必要な前提条件
 
