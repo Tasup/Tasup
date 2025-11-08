@@ -64,6 +64,48 @@ Provide clear, step-by-step guidance for Claude.
      - Project 'Tasup Experiment': 'In progress' → 'Done'"
    - If some projects failed to update, list both successful and failed projects with reasons for failures.
 
+9. **Update Parent Issue Status**:
+   After successfully updating the child issue status, check and update the parent issue if applicable.
+
+   a. **Get Parent Issue**:
+      - Refer to `.claude/skills/gh-commands.md` for the "Get parent issue (REST API - Recommended)" command.
+      - Execute `gh api /repos/OWNER/REPO/issues/ISSUE_NUMBER/parent` to retrieve the parent issue.
+      - Extract the parent issue number from the response (`number` field).
+      - If there is no parent issue (404 error or empty response), skip to step 10 with message: "No parent issue found to update."
+
+   b. **Get All Projects for Parent Issue**:
+      - For the parent issue, get project information for all linked projects (same as steps 2-4 for the child issue).
+      - Retrieve project item IDs, current statuses, and field information for all projects.
+
+   c. **Check All Child Issues Status**:
+      - Refer to `.claude/skills/gh-commands.md` for the "Get child issues (REST API - Recommended)" command.
+      - Execute `gh api /repos/OWNER/REPO/issues/PARENT_ISSUE_NUMBER/sub_issues` to get all child issues tracked by the parent issue.
+      - For each child issue, get its current status from all projects where it exists by using the same project item retrieval logic as in steps 2-4.
+      - Determine the appropriate parent status based on child statuses:
+        - If ALL child issues are "Done" in ALL projects, parent should be "Done"
+        - If ANY child issue is "In Progress" or "In progress" in ANY project, parent should be "In Progress" (or "In progress" depending on project naming)
+        - If ALL child issues are "Todo" or "TODO" in ALL projects, parent should be "Todo" (or "TODO" depending on project naming)
+        - Otherwise, parent should be "In Progress" (mixed statuses)
+
+   d. **Update Parent Issue Status in All Projects**:
+      - For each project where the parent issue exists, compare the determined status with the current parent status.
+      - If they are the same, skip the update for that project.
+      - If they are different, update the parent status to the determined status.
+      - Track which projects were successfully updated and which failed (if any).
+
+   e. **Verify Parent Updates**: Verify the parent issue updates using the "Verify update" command.
+
+10. **Final Confirmation**: Provide a comprehensive summary that includes:
+    - Child issue status update (old status → new status for each project)
+    - Number of projects updated for the child issue
+    - Parent issue information (if found):
+      - Parent issue number and title
+      - Number of projects updated for the parent issue
+      - Old status → new status for each project
+      - Any projects where parent status was already correct (no update needed)
+    - Any warnings or errors encountered
+    - Example: "Successfully updated issue #42 'SubIssue3333' from 'Todo' to 'In Progress' in 2 projects. Parent issue #4 'Ready' updated from 'Todo' to 'In Progress' in 2 projects."
+
 ## Command Reference
 All required GitHub CLI commands are documented in `.claude/skills/gh-commands.md`. Refer to that file for:
 - Getting project information
@@ -76,6 +118,9 @@ All required GitHub CLI commands are documented in `.claude/skills/gh-commands.m
 
 - Ensure that the user has the necessary permissions and authentication scopes to perform these actions.
 - This skill targets **all projects** linked to the issue.
+- This skill performs a **two-phase update**:
+  1. First, updates the child issue status to the user-selected status
+  2. Then, automatically updates parent issues that track the child issue
 - Status names are case-sensitive. Common variations include:
   - "Todo" or "TODO"
   - "In Progress" or "In progress"
@@ -83,6 +128,13 @@ All required GitHub CLI commands are documented in `.claude/skills/gh-commands.m
 - If an issue is linked to multiple projects, the skill will update the status in all of them to the same user-selected status.
 - If the issue has different statuses across projects, all projects will be updated to the newly selected status.
 - Partial failures are handled gracefully: if some projects update successfully while others fail, the success message will list both outcomes.
+- Parent status is determined by aggregating the status of all child issues:
+  - All Done → Parent Done
+  - Any In Progress → Parent In Progress
+  - All Todo → Parent Todo
+  - Mixed → Parent In Progress
+- Parent issues already in the correct status will not be modified to avoid unnecessary API calls.
+- If a parent issue is not linked to any project, it will be skipped with a warning.
 - All command examples and usage patterns are maintained in `.claude/skills/gh-commands.md`
 
 
