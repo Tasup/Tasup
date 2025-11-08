@@ -62,8 +62,24 @@ gh api graphql -f query='
 }'
 ```
 
-### Get child issues (tracked issues)
-Get all child issues tracked by the current issue:
+### Get child issues (REST API - Recommended)
+Get all child (sub) issues tracked by the current issue using REST API:
+```bash
+gh api /repos/OWNER/REPO/issues/ISSUE_NUMBER/sub_issues
+```
+
+Response includes an array of child issue objects, each with:
+- `number`: Child issue number
+- `title`: Child issue title
+- `state`: open or closed
+- `parent_issue_url`: URL to the parent issue
+
+**Note**: Use this REST API method as it's more reliable than GraphQL `trackedIssues`.
+
+### Get child issues (GraphQL - Deprecated)
+**DEPRECATED**: This GraphQL method may not return results reliably. Use the REST API method above instead.
+
+Get all child issues tracked by the current issue using GraphQL:
 ```bash
 gh api graphql -f query='
 {

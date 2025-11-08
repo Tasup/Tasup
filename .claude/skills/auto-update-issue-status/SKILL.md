@@ -71,13 +71,13 @@ Provide clear, step-by-step guidance for Claude.
       - Retrieve project item IDs, current statuses, and field information for all projects.
 
    c. **Check All Child Issues Status**:
-      - Refer to `.claude/skills/gh-commands.md` for the "Get child issues (tracked issues)" command.
-      - Execute the GraphQL query to get all child issues tracked by the parent issue.
-      - For each child issue, get its current status from all projects where it exists.
+      - Refer to `.claude/skills/gh-commands.md` for the "Get child issues (REST API - Recommended)" command.
+      - Execute `gh api /repos/OWNER/REPO/issues/PARENT_ISSUE_NUMBER/sub_issues` to get all child issues tracked by the parent issue.
+      - For each child issue, get its current status from all projects where it exists by using the same project item retrieval logic as in steps 2-4.
       - Determine the appropriate parent status based on child statuses:
-        - If ALL child issues are "Done", parent should be "Done"
-        - If ANY child issue is "In Progress" or "In progress", parent should be "In Progress" (or "In progress" depending on project naming)
-        - If ALL child issues are "Todo" or "TODO", parent should be "Todo" (or "TODO" depending on project naming)
+        - If ALL child issues are "Done" in ALL projects, parent should be "Done"
+        - If ANY child issue is "In Progress" or "In progress" in ANY project, parent should be "In Progress" (or "In progress" depending on project naming)
+        - If ALL child issues are "Todo" or "TODO" in ALL projects, parent should be "Todo" (or "TODO" depending on project naming)
         - Otherwise, parent should be "In Progress" (mixed statuses)
 
    d. **Update Parent Issue Status in All Projects**:
