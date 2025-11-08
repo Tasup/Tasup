@@ -143,7 +143,7 @@ GitHub Issueのステータスを任意のステータスへ更新するスキ�
 
 ### Jira Integration
 
-#### `auto-update-jira-status`
+#### `auto-update-jira-issue-status`
 
 Jiraチケットのステータスを次の段階へ自動的に更新するスキル (TODO→進行中→完了)。
 
@@ -210,13 +210,14 @@ mcp__atlassian__transitionJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey:
 .claude/
 ├── commands/           # スラッシュコマンド
 │   ├── create-issue.md
-│   └── implement-issue.md
+│   ├── implement-issue.md
+│   └── jira/
+│       └── implement-issue.md
 ├── skills/            # カスタムスキル
 │   ├── auto-update-issue-status/
 │   │   └── SKILL.md
-│   ├── jira/
-│   │   └── auto-update-jira-status/
-│   │       └── SKILL.md
+│   ├── auto-update-jira-issue-status/
+│   │   └── SKILL.md
 │   ├── update-issue-status-from-todo-to-in-progress/
 │   │   └── SKILL.md
 │   ├── update-parent-issue-status/
@@ -236,8 +237,11 @@ mcp__atlassian__transitionJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey:
 - `Skill(update-parent-issue-status)` - 親Issueステータス更新スキル
 
 #### Jira関連
-- `Skill(auto-update-jira-status)` - Jira自動ステータス更新スキル
+- `Skill(auto-update-jira-issue-status)` - Jira自動ステータス更新スキル
 - `mcp__atlassian__getJiraIssue` - Jiraチケット取得
+- `mcp__atlassian__getTransitionsForJiraIssue` - Jira遷移取得
+- `mcp__atlassian__transitionJiraIssue` - Jiraステータス遷移
+- `Bash(npx -y mcp-remote https://mcp.atlassian.com/v1/sse)` - Atlassian MCP Remote実行
 
 #### 一般
 - `Bash(sed:*)` - テキスト処理
@@ -246,6 +250,8 @@ mcp__atlassian__transitionJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey:
 - `Bash(tree:*)` - ディレクトリ構造表示
 - `Bash(chmod:*)` - ファイルパーミッション変更
 - `Bash(bash:*)` - シェルスクリプト実行
+- `WebFetch(domain:github.com)` - GitHub Webフェッチ
+- `WebFetch(domain:code.claude.com)` - Claude Code Webフェッチ
 
 ## Integration Details
 
