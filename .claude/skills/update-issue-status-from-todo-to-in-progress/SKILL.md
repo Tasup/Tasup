@@ -23,10 +23,19 @@ Provide clear, step-by-step guidance for Claude.
 
 4. **Get Field Information**: Refer to `.claude/skills/gh-commands.md` for the command to retrieve project fields. Find the "Status" field ID and all available status options from the JSON output.
 
-5. **Present Current Status and Ask User**: Display the current status of the issue to the user. Then use the AskUserQuestion tool to present all available status options (excluding the current status) and let the user select the desired new status. Format the question as follows:
+5. **Present Current Status and Let User Select New Status**: Display the current status of the issue to the user in a text message. List all available statuses except the current one. Then use the AskUserQuestion tool with the following approach to handle more than 4 status options:
+
+   **If there are 4 or fewer status options (excluding current status):**
+   - Present all available statuses in a single AskUserQuestion
    - Question: "issue #NUMBER を現在の「CURRENT_STATUS」からどのステータスに変更しますか？"
    - Header: "ステータス選択"
-   - Options: List all available statuses except the current one (maximum 4 options, if more than 4 statuses exist, group logically or present the most common ones)
+   - Options: List all available statuses
+
+   **If there are more than 4 status options (excluding current status):**
+   - First, display all available statuses in a text message to the user
+   - Then ask the user which specific status they want to change to using AskUserQuestion with the first 4 most common statuses as options
+   - The "Other" option will automatically be available for any status not in the initial 4
+   - Common workflow statuses to prioritize: "Todo", "In progress", "In review", "Done"
 
 6. **Update Issue Status**: Refer to `.claude/skills/gh-commands.md` for the command to update the issue status. Replace the placeholders with the values obtained in previous steps and the user-selected status option ID.
 
