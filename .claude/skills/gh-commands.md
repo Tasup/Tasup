@@ -28,12 +28,21 @@ gh issue view ISSUE_NUMBER --json projectItems
 ```
 
 ### Get parent issue (REST API - Recommended)
-Get the parent issue using REST API:
+Get the parent issue using REST API. This returns a single parent issue object:
 ```bash
 gh api /repos/OWNER/REPO/issues/ISSUE_NUMBER/parent
 ```
 
-### Get parent issues (GraphQL - Legacy)
+Response includes:
+- `number`: Parent issue number
+- `title`: Parent issue title
+- `sub_issues_summary`: Summary of all child issues (total, completed, percent_completed)
+
+**Note**: Use this REST API method instead of GraphQL `trackedInIssues` as it's more reliable and returns the direct parent issue.
+
+### Get parent issues (GraphQL - Deprecated)
+**DEPRECATED**: This GraphQL method may not return results reliably. Use the REST API method above instead.
+
 Get all parent issues that track the current issue using GraphQL:
 ```bash
 gh api graphql -f query='

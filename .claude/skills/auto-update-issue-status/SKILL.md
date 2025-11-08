@@ -57,54 +57,47 @@ Provide clear, step-by-step guidance for Claude.
      - Project 'Tasup Experiment': 'TODO' → 'In progress'"
    - If some projects failed to update, list both successful and failed projects with reasons for failures.
 
-9. **Update Parent Issue Status (Optional)**:
-   After successfully updating the child issue status, check and update parent issues if applicable:
+9. **Update Parent Issue Status**:
+   After successfully updating the child issue status, check and update the parent issue if applicable.
 
-   a. **Get Parent Issues**:
-      - Refer to `.claude/skills/gh-commands.md` for the "Get parent issues (tracked in issues)" command.
-      - Execute the GraphQL query to retrieve all parent issues that track the current issue.
-      - Extract the list of parent issue numbers from the response.
-      - If there are no parent issues (`trackedInIssues.nodes` is empty), skip to final confirmation.
+   a. **Get Parent Issue**:
+      - Refer to `.claude/skills/gh-commands.md` for the "Get parent issue (REST API - Recommended)" command.
+      - Execute `gh api /repos/OWNER/REPO/issues/ISSUE_NUMBER/parent` to retrieve the parent issue.
+      - Extract the parent issue number from the response (`number` field).
+      - If there is no parent issue (404 error or empty response), skip to step 10 with message: "No parent issue found to update."
 
-   b. **For Each Parent Issue**:
-      For each parent issue number found, perform the following steps:
+   b. **Get All Projects for Parent Issue**:
+      - For the parent issue, get project information for all linked projects (same as steps 2-4 for the child issue).
+      - Retrieve project item IDs, current statuses, and field information for all projects.
 
-      i. **Get Project Information**: Use the "Get project information" command from `.claude/skills/gh-commands.md` to retrieve the project ID and number.
+   c. **Check All Child Issues Status**:
+      - Refer to `.claude/skills/gh-commands.md` for the "Get child issues (tracked issues)" command.
+      - Execute the GraphQL query to get all child issues tracked by the parent issue.
+      - For each child issue, get its current status from all projects where it exists.
+      - Determine the appropriate parent status based on child statuses:
+        - If ALL child issues are "Done", parent should be "Done"
+        - If ANY child issue is "In Progress" or "In progress", parent should be "In Progress" (or "In progress" depending on project naming)
+        - If ALL child issues are "Todo" or "TODO", parent should be "Todo" (or "TODO" depending on project naming)
+        - Otherwise, parent should be "In Progress" (mixed statuses)
 
-      ii. **Get Project Item ID and Current Status**:
-         - Use the "Get project item ID" command to find the parent issue's item ID.
-         - Extract the current status value from `fieldValues`.
-         - If not found in project, log warning and skip to next parent.
+   d. **Update Parent Issue Status in All Projects**:
+      - For each project where the parent issue exists, compare the determined status with the current parent status.
+      - If they are the same, skip the update for that project.
+      - If they are different, update the parent status to the determined status.
+      - Track which projects were successfully updated and which failed (if any).
 
-      iii. **Get Field Information**: Use the "Get field information" command to get the Status field ID and all option IDs.
-
-      iv. **Check All Child Issues Status**:
-         - Use the "Get child issues (tracked issues)" command from `.claude/skills/gh-commands.md`.
-         - Execute the GraphQL query to get all child issues tracked by the parent.
-         - For each child issue, get its current status from the project.
-         - Determine the appropriate parent status:
-           - If ALL child issues are "Done" → parent should be "Done"
-           - If ANY child issue is "In Progress" → parent should be "In Progress"
-           - If ALL child issues are "Todo" → parent should be "Todo"
-           - Otherwise → parent should be "In Progress" (mixed statuses)
-
-      v. **Update Parent Issue Status**:
-         - If determined status differs from current status, use the "Update issue status" command.
-         - If status is the same, skip update and log message.
-         - Verify the update using the "Verify update" command.
-
-   c. **Handle Parent Update Errors**: For each parent issue, handle errors gracefully:
-      - Continue processing other parents if one fails
-      - Log clear error messages
-      - Don't fail the entire workflow if parent updates fail
+   e. **Verify Parent Updates**: Verify the parent issue updates using the "Verify update" command.
 
 10. **Final Confirmation**: Provide a comprehensive summary that includes:
-    - Child issue status update (old status → new status)
-    - Number of parent issues found
-    - Number of parent issues successfully updated
-    - List of updated parent issues with their status changes
-    - Any warnings or skipped parents
-    - Example: "Successfully updated issue #5 from 'Todo' to 'In Progress'. Found 2 parent issues: updated #3 from 'Todo' to 'In Progress', #7 was already 'In Progress'."
+    - Child issue status update (old status → new status for each project)
+    - Number of projects updated for the child issue
+    - Parent issue information (if found):
+      - Parent issue number and title
+      - Number of projects updated for the parent issue
+      - Old status → new status for each project
+      - Any projects where parent status was already correct (no update needed)
+    - Any warnings or errors encountered
+    - Example: "Successfully updated issue #42 'SubIssue3333' from 'Todo' to 'In Progress' in 2 projects. Parent issue #4 'Ready' updated from 'Todo' to 'In Progress' in 2 projects."
 
 ## Notes
 

@@ -29,14 +29,14 @@ Provide clear, step-by-step guidance for Claude.
    - Verify the update was successful
    - If the update fails, stop here and report the error
 
-3. **Get Parent Issues**:
-   - Refer to `.claude/skills/gh-commands.md` for the "Get parent issues (tracked in issues)" command.
-   - Execute the GraphQL query to retrieve all parent issues that track the current issue.
-   - Extract the list of parent issue numbers from the response.
-   - If there are no parent issues (`trackedInIssues.nodes` is empty), complete the workflow with message: "Child issue updated successfully. No parent issues found to update."
+3. **Get Parent Issue**:
+   - Refer to `.claude/skills/gh-commands.md` for the "Get parent issue (REST API - Recommended)" command.
+   - Execute the REST API call to retrieve the parent issue that tracks the current issue.
+   - Extract the parent issue number from the response (`number` field).
+   - If there is no parent issue (404 error or empty response), complete the workflow with message: "Child issue updated successfully. No parent issue found to update."
 
-4. **For Each Parent Issue, Update Status**:
-   For each parent issue number found in step 3, perform the following steps:
+4. **Update Parent Issue Status**:
+   For the parent issue found in step 3, perform the following steps:
 
    a. **Get Project Information**: Refer to `.claude/skills/gh-commands.md` for the "Get project information" command. Execute it to retrieve the list of projects and extract the first project's ID and number from the JSON output.
 
@@ -93,7 +93,7 @@ Provide clear, step-by-step guidance for Claude.
 - This skill performs a **two-phase update**:
   1. First, updates the child issue status from Todo to In Progress
   2. Then, updates all parent issues that track the child issue
-- This skill processes **all parent issues** that track the current issue.
+- This skill processes **the parent issue** that tracks the current issue (GitHub supports single-level parent-child relationships).
 - Parent status is determined by aggregating the status of all child issues:
   - All Done → Parent Done
   - Any In Progress → Parent In Progress
