@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(sed:*)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Bash(chmod:*)",
+      "Bash(bash:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
