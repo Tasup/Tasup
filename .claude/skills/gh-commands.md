@@ -27,6 +27,52 @@ gh project item-edit --id ITEM_ID --project-id PROJECT_ID --field-id FIELD_ID --
 gh issue view ISSUE_NUMBER --json projectItems
 ```
 
+### Get parent issue (REST API - Recommended)
+Get the parent issue using REST API:
+```bash
+gh api /repos/OWNER/REPO/issues/ISSUE_NUMBER/parent
+```
+
+### Get parent issues (GraphQL - Legacy)
+Get all parent issues that track the current issue using GraphQL:
+```bash
+gh api graphql -f query='
+{
+  repository(owner: "OWNER", name: "REPO") {
+    issue(number: ISSUE_NUMBER) {
+      number
+      title
+      trackedInIssues(first: 10) {
+        nodes {
+          number
+          title
+        }
+      }
+    }
+  }
+}'
+```
+
+### Get child issues (tracked issues)
+Get all child issues tracked by the current issue:
+```bash
+gh api graphql -f query='
+{
+  repository(owner: "OWNER", name: "REPO") {
+    issue(number: ISSUE_NUMBER) {
+      number
+      title
+      trackedIssues(first: 10) {
+        nodes {
+          number
+          title
+        }
+      }
+    }
+  }
+}'
+```
+
 ## Example Usage
 ```bash
 # Get project information
@@ -43,4 +89,41 @@ gh project item-edit --id PVTI_xxx --project-id PVT_xxx --field-id PVTSSF_xxx --
 
 # Verify update
 gh issue view 5 --json projectItems
+
+# Get parent issue for issue #33 (REST API)
+gh api /repos/Tasup/Tasup/issues/33/parent
+
+# Get parent issues for issue #33 (GraphQL - Legacy)
+gh api graphql -f query='
+{
+  repository(owner: "Tasup", name: "Tasup") {
+    issue(number: 33) {
+      number
+      title
+      trackedInIssues(first: 10) {
+        nodes {
+          number
+          title
+        }
+      }
+    }
+  }
+}'
+
+# Get child issues for issue #8
+gh api graphql -f query='
+{
+  repository(owner: "Tasup", name: "Tasup") {
+    issue(number: 8) {
+      number
+      title
+      trackedIssues(first: 10) {
+        nodes {
+          number
+          title
+        }
+      }
+    }
+  }
+}'
 ```
