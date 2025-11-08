@@ -55,11 +55,17 @@ GitHub IssueのステータスをGitHub Projects V2で「In progress」に更新
 5. `gh project item-edit`コマンドでステータスを更新
 6. 更新結果を検証
 
-#### Skill: `update-issue-status-from-todo-to-in-progress`
+#### Skill: `auto-update-issue-status`
+
+Location: `.claude/skills/auto-update-issue-status/SKILL.md`
+
+GitHub Issueのステータスを次の段階へ自動的に更新するスキル (Todo→In Progress→Done)。複数プロジェクト対応で、Issueが複数のプロジェクトに紐づいている場合、すべてのプロジェクトのステータスを一括更新する。8ステップのプロセスで実装されており、エラーハンドリングと検証を含む。
+
+#### Skill: `update-issue-status`
 
 Location: `.claude/skills/update-issue-status-from-todo-to-in-progress/SKILL.md`
 
-GitHub IssueのステータスをTODOからIN_PROGRESSに更新するスキル。7ステップのプロセスで実装されており、エラーハンドリングと検証を含む。
+GitHub Issueのステータスを任意のステータスへ更新するスキル。複数プロジェクト対応で、Issueが複数のプロジェクトに紐づいている場合、すべてのプロジェクトのステータスを一括更新する。ユーザーがインタラクティブにステータスを選択でき、エラーハンドリングと検証を含む。
 
 ### 承認済みコマンド
 
@@ -68,7 +74,8 @@ GitHub IssueのステータスをTODOからIN_PROGRESSに更新するスキル�
 - `Bash(sed:*)` - テキスト処理
 - `Bash(gh:*)` - GitHub CLI操作
 - `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)` - Git操作
-- `Skill(update-issue-status-from-todo-to-in-progress.md)` - Issue更新スキル
+- `Skill(update-issue-status-from-todo-to-in-progress)` - 任意ステータス更新スキル
+- `Skill(auto-update-issue-status)` - 自動ステータス更新スキル
 - `Bash(tree:*)` - ディレクトリ構造表示
 
 ## GitHub Projects V2 Integration
