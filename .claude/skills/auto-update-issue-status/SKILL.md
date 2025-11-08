@@ -29,7 +29,11 @@ Provide clear, step-by-step guidance for Claude.
    - If current status is "Todo", next status is "In Progress"
    - If current status is "In Progress", next status is "Done"
    - If current status is "Done", skip the update and return a message: "Issue is already in Done status. No update needed."
-   - If current status is not one of the expected values, return an error: "Unknown current status: [STATUS_NAME]"
+   - If current status is not one of the expected values (Todo/In Progress/Done):
+     * Inform the user that the current status "[STATUS_NAME]" is not part of the automatic Todo→In Progress→Done flow
+     * Automatically invoke the `update-issue-status` skill by using the Skill tool: `Skill(update-issue-status-from-todo-to-in-progress)`
+     * The update-issue-status skill will present all available statuses to the user for interactive selection
+     * Do NOT return an error - instead, gracefully transition to the interactive skill
 
 6. **Update Issue Status**: Refer to `.claude/skills/gh-commands.md` for the "Update issue status" command. Execute it with the values obtained in previous steps to update the status to the next stage.
 
@@ -40,8 +44,9 @@ Provide clear, step-by-step guidance for Claude.
    - Missing Status field in project
    - Missing authentication scopes (project permissions)
    - Network issues
-   - Unknown or unexpected status values
    Provide clear error messages for each scenario.
+
+   Note: Statuses outside the Todo→In Progress→Done flow are handled in step 5 with a suggestion to use the alternative skill, not as errors.
 
 8. **Confirm Success**: Refer to `.claude/skills/gh-commands.md` for the "Verify update" command. After successfully updating the status, verify the update and confirm with a success message that includes:
    - The previous status
@@ -55,3 +60,4 @@ Provide clear, step-by-step guidance for Claude.
 - The status transition flow is strictly: **Todo → In Progress → Done**
 - Issues already in "Done" status will not be modified.
 - Status names are case-sensitive and should match: "Todo", "In Progress", "Done"
+- **For issues with statuses outside this flow** (e.g., "In review", "Backlog", "Ready"), this skill will suggest using the `update-issue-status` skill instead, which supports manual selection of any available status.
