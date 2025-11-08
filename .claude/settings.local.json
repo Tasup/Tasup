@@ -10,7 +10,9 @@
       "Bash(git push:*)",
       "Skill(update-issue-status-from-todo-to-in-progress.md)",
       "Bash(tree:*)",
-      "Skill(update-issue-status-from-todo-to-in-progress)"
+      "Skill(update-issue-status-from-todo-to-in-progress)",
+      "Skill(auto-update-issue-status-from-todo-to-in-progress.md)",
+      "Skill(auto-update-issue-status)",
     ],
     "deny": [],
     "ask": []
