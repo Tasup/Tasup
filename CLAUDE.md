@@ -42,18 +42,31 @@ git push
 
 このリポジトリは以下のClaude Code拡張機能を提供：
 
-#### Slash Command: `/issue-progress`
+#### Slash Command: `/create-issue`
 
-Location: `.claude/commands/issue-progress.md`
+Location: `.claude/commands/create-issue.md`
 
-GitHub IssueのステータスをGitHub Projects V2で「In progress」に更新するコマンド。GraphQL APIとgh CLIを組み合わせて、以下のプロセスで動作：
+GitHub Issueを作成するコマンド。以下のプロセスで動作：
+
+1. ユーザーにIssueのタイトルとタスクを質問
+2. タスクをチェックリスト形式でフォーマット
+3. プレビューを表示してユーザーに確認
+4. `gh issue create`コマンドでIssueを作成
+5. 作成されたIssue URLを表示し、次のステップとして `/implement-issue` の実行を案内
+
+#### Slash Command: `/implement-issue`
+
+Location: `.claude/commands/implement-issue.md`
+
+GitHub Issueの実装を計画・実行するコマンド。以下のプロセスで動作：
 
 1. Issue URLから情報を抽出
-2. GraphQL APIでプロジェクト情報を取得（item_id, project_id, field_id, option_id）
-3. 現在のステータスを確認
-4. 既に「In progress」の場合はスキップ
-5. `gh project item-edit`コマンドでステータスを更新
-6. 更新結果を検証
+2. `gh issue view`でIssue詳細を取得
+3. ブランチ名を生成（`{repository_name}-{issue_number}-{implement-content}`形式、40文字以内）
+4. `git checkout -b`で新しいブランチを作成
+5. `auto-update-issue-status`スキルを使用してIssueステータスを "In Progress" に更新
+6. TodoWriteツールで実装タスクリストを作成
+7. ユーザー確認後、実装を実行
 
 #### Skill: `auto-update-issue-status`
 
@@ -73,10 +86,13 @@ GitHub Issueのステータスを任意のステータスへ更新するスキ�
 
 - `Bash(sed:*)` - テキスト処理
 - `Bash(gh:*)` - GitHub CLI操作
-- `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)` - Git操作
+- `Bash(chmod:*)` - ファイルパーミッション変更
+- `Bash(bash:*)` - シェルスクリプト実行
+- `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)`, `Bash(git checkout:*)` - Git操作
+- `Bash(cat:*)` - ファイル内容表示
+- `Bash(tree:*)` - ディレクトリ構造表示
 - `Skill(update-issue-status-from-todo-to-in-progress)` - 任意ステータス更新スキル
 - `Skill(auto-update-issue-status)` - 自動ステータス更新スキル
-- `Bash(tree:*)` - ディレクトリ構造表示
 
 ## GitHub Projects V2 Integration
 
