@@ -46,11 +46,6 @@ Issueの内容から実装内容を理解し、以下の形式でブランチ名
 - `frontend-15-fix-responsive-layout`
 - `api-23-implement-rate-limiting`
 
-**悪い例**:
-- `tasup-42-this-is-a-very-long-description-that-exceeds-forty-characters-limit` (40文字超過)
-- `tasup-42-ユーザー認証追加` (日本語を含む)
-- `tasup-42-add user auth` (スペースを含む)
-
 ### 4. ブランチの作成と切り替え
 
 生成したブランチ名で新しいブランチを作成し、切り替えてください：
