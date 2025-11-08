@@ -1,26 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(sed:*)",
-      "Bash(gh:*)",
-      "Bash(chmod:*)",
-      "Bash(bash:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(tree:*)",
-      "Skill(update-issue-status-from-todo-to-in-progress)",
-      "Skill(auto-update-issue-status)",
-      "Skill(update-parent-issue-status)",
-      "Bash(git checkout:*)",
       "Bash(cat:*)",
-      "Skill(auto-update-jira-issue-status)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:code.claude.com)",
       "Bash(npx -y mcp-remote https://mcp.atlassian.com/v1/sse)",
+      "WebSearch",
+      "WebFetch(domain:code.claude.com)",
       "mcp__atlassian__getJiraIssue",
-      "mcp__atlassian__getTransitionsForJiraIssue)",
-      "mcp__atlassian__transitionJiraIssue"
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nchore: simplify Claude settings permissions\n\nStreamline the permissions configuration in settings.local.json by removing redundant auto-approve entries and keeping only essential permissions:\n- Bash(cat:*)\n- Atlassian MCP Server access\n- WebSearch and WebFetch for Claude docs\n- mcp__atlassian__getJiraIssue\n\nThis simplification makes the configuration more maintainable while keeping necessary functionality intact.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(gh pr create --title \"chore: simplify Claude settings permissions\" --body \"$(cat <<''EOF''\n## Summary\n- Streamline permissions configuration in `.claude/settings.local.json`\n- Remove redundant auto-approve entries\n- Keep only essential permissions for core functionality\n\n## Changes\n**Removed permissions:**\n- `Bash(sed:*)`, `Bash(gh:*)`, `Bash(chmod:*)`, `Bash(bash:*)`\n- `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)`, `Bash(git checkout:*)`, `Bash(tree:*)`\n- `Skill(update-issue-status-from-todo-to-in-progress)`, `Skill(auto-update-issue-status)`, `Skill(update-parent-issue-status)`, `Skill(auto-update-jira-issue-status)`\n- `WebFetch(domain:github.com)`\n- `mcp__atlassian__getTransitionsForJiraIssue)`, `mcp__atlassian__transitionJiraIssue`\n\n**Retained permissions:**\n- `Bash(cat:*)` - File reading\n- `Bash(npx -y mcp-remote https://mcp.atlassian.com/v1/sse)` - Atlassian MCP Server\n- `WebSearch` - Web searching capability\n- `WebFetch(domain:code.claude.com)` - Claude documentation access\n- `mcp__atlassian__getJiraIssue` - Basic Jira issue reading\n\n## Rationale\nThe previous configuration had many auto-approved commands that are better handled with user confirmation for security and transparency. This simplified configuration:\n- Reduces attack surface by requiring explicit approval for sensitive operations\n- Makes the settings more maintainable\n- Keeps essential read-only operations auto-approved\n- Maintains Atlassian MCP integration for Jira workflows\n\n## Test plan\n- [x] Verify settings file is valid JSON\n- [x] Confirm MCP server connection still works\n- [ ] Test Jira integration functionality\n- [ ] Verify other Claude Code features work as expected\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
