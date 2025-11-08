@@ -5,6 +5,7 @@ GitHub Projects V2とGitHub Issuesの統合を管理するためのClaude Code�
 ## Features
 
 - **自動ステータス更新**: GitHub IssueのステータスをGitHub Projects V2で自動的に更新
+- **複数プロジェクト対応**: Issueが複数のプロジェクトに紐づいている場合、すべてのプロジェクトのステータスを一括更新
 - **Claude Code統合**: カスタムスラッシュコマンドとスキルによる効率的なワークフロー
 - **GraphQL API活用**: GitHub Projects V2のフルパワーを活用した高度な統合
 
@@ -59,12 +60,24 @@ GitHub IssueのステータスをGitHub Projects V2で「In progress」に更新
 
 ### スキル
 
-#### `update-issue-status-from-todo-to-in-progress`
+#### `auto-update-issue-status`
 
-GitHub IssueのステータスをTODOからIN_PROGRESSに更新するスキル。
+GitHub Issueのステータスを次の段階へ自動的に更新するスキル (Todo→In Progress→Done)。
 
 特徴:
-- 7ステップの構造化されたプロセス
+- 複数プロジェクト対応: Issueが複数のプロジェクトに紐づいている場合、すべてのプロジェクトのステータスを一括更新
+- 8ステップの構造化されたプロセス
+- 包括的なエラーハンドリング
+- 更新前後の検証
+
+#### `update-issue-status`
+
+GitHub Issueのステータスを任意のステータスへ更新するスキル。ユーザーがステータスを選択できます。
+
+特徴:
+- 複数プロジェクト対応: Issueが複数のプロジェクトに紐づいている場合、すべてのプロジェクトのステータスを一括更新
+- インタラクティブなステータス選択
+- 4つ以上のステータスオプションにも対応
 - 包括的なエラーハンドリング
 - 更新前後の検証
 
@@ -98,8 +111,11 @@ gh issue view ISSUE_NUMBER --json projectItems
 ├── commands/           # スラッシュコマンド
 │   └── issue-progress.md
 ├── skills/            # カスタムスキル
-│   └── update-issue-status-from-todo-to-in-progress/
-│       └── SKILL.md
+│   ├── auto-update-issue-status/
+│   │   └── SKILL.md
+│   ├── update-issue-status-from-todo-to-in-progress/
+│   │   └── SKILL.md
+│   └── gh-commands.md
 └── settings.local.json # 承認済みコマンド設定
 ```
 
@@ -110,7 +126,8 @@ gh issue view ISSUE_NUMBER --json projectItems
 - `Bash(sed:*)` - テキスト処理
 - `Bash(gh:*)` - GitHub CLI操作
 - `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)` - Git操作
-- `Skill(update-issue-status-from-todo-to-in-progress)` - Issue更新スキル
+- `Skill(update-issue-status-from-todo-to-in-progress)` - 任意ステータス更新スキル
+- `Skill(auto-update-issue-status)` - 自動ステータス更新スキル
 - `Bash(tree:*)` - ディレクトリ構造表示
 
 ## GitHub Projects V2 Integration
