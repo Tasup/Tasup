@@ -7,25 +7,45 @@
    ╚═╝   ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝
 ```
 
-GitHub Projects V2とGitHub Issuesの統合を管理するためのClaude Code設定リポジトリです。GitHub CLIコマンドを使用して、Issueのステータスを自動的に更新するワークフローを提供します。
+GitHub Projects V2とJiraの統合を管理するためのClaude Code設定リポジトリです。GitHub CLIコマンドとAtlassian MCP Serverを使用して、IssueやJiraチケットのステータスを自動的に更新するワークフローを提供します。
 
 ## Features
 
+### GitHub Integration
 - **自動ステータス更新**: GitHub IssueのステータスをGitHub Projects V2で自動的に更新
 - **複数プロジェクト対応**: Issueが複数のプロジェクトに紐づいている場合、すべてのプロジェクトのステータスを一括更新
-- **Claude Code統合**: カスタムスラッシュコマンドとスキルによる効率的なワークフロー
 - **GraphQL API活用**: GitHub Projects V2のフルパワーを活用した高度な統合
+
+### Jira Integration
+- **Atlassian MCP連携**: Atlassian MCP Serverを使用したJiraチケットのステータス自動更新
+- **ワークフロー遷移**: Jiraのワークフローに沿った自動ステータス遷移 (TODO→進行中→完了)
+- **ブランチ作成時の自動更新**: ブランチ作成と同時にJiraチケットのステータスを自動更新
+
+### Common
+- **Claude Code統合**: カスタムスラッシュコマンドとスキルによる効率的なワークフロー
 
 ## Prerequisites
 
-以下の環境が必要です：
-
+### GitHub Integration
 - [GitHub CLI](https://cli.github.com/) (gh) がインストールされていること
 - GitHub CLIが認証済みであること (`gh auth status` で確認)
 - `project` 権限を持つトークンが設定されていること
 - Tasup organizationへのアクセス権限
 
+### Jira Integration
+- [Atlassian MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/atlassian) が設定されていること
+- `.mcp.json` でAtlassian MCP Serverが設定されていること
+- Jiraへの認証が完了していること
+- 対象チケットへのアクセス権限
+
 ## Setup
+
+### このリポジトリのクローン
+
+```bash
+git clone https://github.com/Tasup/Tasup.git
+cd Tasup
+```
 
 ### GitHub CLI認証
 
@@ -37,16 +57,29 @@ gh auth login
 gh auth status
 ```
 
-### このリポジトリのクローン
+### Atlassian MCP Server設定
 
-```bash
-git clone https://github.com/Tasup/Tasup.git
-cd Tasup
+`.mcp.json` でAtlassian MCP Serverを設定：
+
+```json
+{
+  "mcpServers": {
+    "atlassian": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-atlassian"
+      ]
+    }
+  }
+}
 ```
+
+初回起動時にJiraへの認証を行います。
 
 ## Usage
 
-### スラッシュコマンド
+### GitHub Integration
 
 #### `/create-issue`
 
@@ -87,8 +120,6 @@ GitHub Issueの実装を計画・実行します。
 6. TodoWriteツールで実装タスクリストを作成
 7. ユーザー確認後、実装を実行
 
-### スキル
-
 #### `auto-update-issue-status`
 
 GitHub Issueのステータスを次の段階へ自動的に更新するスキル (Todo→In Progress→Done)。
@@ -109,6 +140,33 @@ GitHub Issueのステータスを任意のステータスへ更新するスキ�
 - 4つ以上のステータスオプションにも対応
 - 包括的なエラーハンドリング
 - 更新前後の検証
+
+### Jira Integration
+
+#### `auto-update-jira-issue-status`
+
+Jiraチケットのステータスを次の段階へ自動的に更新するスキル (TODO→進行中→完了)。
+
+特徴:
+- Atlassian MCP Serverを使用したJira API連携
+- Jiraのワークフロー遷移を自動実行
+- ブランチ作成時の自動ステータス更新に最適
+- 8ステップの構造化されたプロセス
+- 包括的なエラーハンドリング
+- 更新前後の検証
+
+使用方法:
+1. Claude Codeでブランチを作成する際に自動的に実行
+2. または明示的にスキルを呼び出し
+3. Jiraチケット URLを指定
+4. 自動的に次のステータスへ遷移
+
+処理フロー:
+1. JiraチケットURLから情報を抽出 (cloudId/issueKey)
+2. 現在のステータスを取得
+3. 利用可能な遷移を取得
+4. 次のステータスへの遷移を実行
+5. 更新を検証
 
 ## Common Commands
 
@@ -131,6 +189,19 @@ gh project item-edit --id ITEM_ID --project-id PROJECT_ID --field-id FIELD_ID --
 gh issue view ISSUE_NUMBER --json projectItems
 ```
 
+### Jira Management with Atlassian MCP
+
+```bash
+# Jiraチケットの情報を取得
+mcp__atlassian__getJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey: "KEY-123")
+
+# 利用可能な遷移を取得
+mcp__atlassian__getTransitionsForJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey: "KEY-123")
+
+# ステータスを遷移
+mcp__atlassian__transitionJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey: "KEY-123", transition: {id: "11"})
+```
+
 ## Architecture
 
 ### Directory Structure
@@ -139,12 +210,19 @@ gh issue view ISSUE_NUMBER --json projectItems
 .claude/
 ├── commands/           # スラッシュコマンド
 │   ├── create-issue.md
-│   └── implement-issue.md
+│   ├── implement-issue.md
+│   └── jira/
+│       └── implement-issue.md
 ├── skills/            # カスタムスキル
 │   ├── auto-update-issue-status/
 │   │   └── SKILL.md
-│   └── update-issue-status-from-todo-to-in-progress/
+│   ├── auto-update-jira-issue-status/
 │   │   └── SKILL.md
+│   ├── update-issue-status-from-todo-to-in-progress/
+│   │   └── SKILL.md
+│   ├── update-parent-issue-status/
+│   │   └── SKILL.md
+│   └── gh-commands.md
 └── settings.local.json # 承認済みコマンド設定
 ```
 
@@ -152,16 +230,34 @@ gh issue view ISSUE_NUMBER --json projectItems
 
 以下のコマンドは `.claude/settings.local.json` で自動承認されています：
 
-- `Bash(sed:*)` - テキスト処理
+#### GitHub関連
 - `Bash(gh:*)` - GitHub CLI操作
-- `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)` - Git操作
 - `Skill(update-issue-status-from-todo-to-in-progress)` - 任意ステータス更新スキル
 - `Skill(auto-update-issue-status)` - 自動ステータス更新スキル
+- `Skill(update-parent-issue-status)` - 親Issueステータス更新スキル
+
+#### Jira関連
+- `Skill(auto-update-jira-issue-status)` - Jira自動ステータス更新スキル
+- `mcp__atlassian__getJiraIssue` - Jiraチケット取得
+- `mcp__atlassian__getTransitionsForJiraIssue` - Jira遷移取得
+- `mcp__atlassian__transitionJiraIssue` - Jiraステータス遷移
+- `Bash(npx -y mcp-remote https://mcp.atlassian.com/v1/sse)` - Atlassian MCP Remote実行
+
+#### 一般
+- `Bash(sed:*)` - テキスト処理
+- `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)`, `Bash(git checkout:*)` - Git操作
+- `Bash(cat:*)` - ファイル内容表示
 - `Bash(tree:*)` - ディレクトリ構造表示
+- `Bash(chmod:*)` - ファイルパーミッション変更
+- `Bash(bash:*)` - シェルスクリプト実行
+- `WebFetch(domain:github.com)` - GitHub Webフェッチ
+- `WebFetch(domain:code.claude.com)` - Claude Code Webフェッチ
 
-## GitHub Projects V2 Integration
+## Integration Details
 
-### Issueステータス更新のワークフロー
+### GitHub Projects V2 Integration
+
+#### Issueステータス更新のワークフロー
 
 1. プロジェクトIDとフィールドIDを特定
 2. Issue URLからowner/repo/numberを抽出
@@ -169,13 +265,32 @@ gh issue view ISSUE_NUMBER --json projectItems
 4. `gh project item-edit` コマンドでステータスを更新
 5. `gh issue view` で更新を検証
 
-### エラーハンドリング
+#### エラーハンドリング
 
 以下のエラーケースに対応：
 - 無効なURL形式
 - 存在しないIssue
 - プロジェクトに関連付けられていないIssue
 - 認証スコープの不足
+- ネットワークエラー
+
+### Jira Integration
+
+#### Jiraステータス更新のワークフロー
+
+1. JiraチケットURLから情報を抽出 (cloudId/issueKey)
+2. Atlassian MCP Serverを使用して現在のステータスを取得
+3. 利用可能な遷移を取得
+4. 次のステータスへの遷移を実行
+5. 更新を検証
+
+#### エラーハンドリング
+
+以下のエラーケースに対応：
+- 無効なURL形式
+- 存在しないチケット
+- 利用可能な遷移が存在しない
+- 認証エラー
 - ネットワークエラー
 
 ## Contributing
