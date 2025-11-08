@@ -153,3 +153,9 @@ gh issue view ISSUE_NUMBER --json projectItems
 
 プルリクエストを歓迎します。大きな変更の場合は、まずIssueを開いて変更内容を議論してください。
 
+## Authors
+
+| <img src="https://github.com/nakayama-bird.png?size=40" width="40" height="40"> | <img src="https://github.com/karukan029.png?size=40" width="40" height="40"> | <img src="https://github.com/sontixyou.png?size=40" width="40" height="40"> |
+|:---:|:---:|:---:|
+| [@nakayama-bird](https://github.com/nakayama-bird) | [@karukan029](https://github.com/karukan029) | [@sontixyou](https://github.com/sontixyou) |
+
