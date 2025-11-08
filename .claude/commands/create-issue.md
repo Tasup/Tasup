@@ -4,7 +4,18 @@ You are creating a new GitHub issue for this repository. Follow these steps:
 
 ## Step 1: Gather Information
 
-Ask the user for the following information:
+First, display the TASUP ASCII art:
+
+```
+████████╗ █████╗ ███████╗██╗   ██╗██████╗
+╚══██╔══╝██╔══██╗██╔════╝██║   ██║██╔══██╗
+   ██║   ███████║███████╗██║   ██║██████╔╝
+   ██║   ██╔══██║╚════██║██║   ██║██╔═══╝
+   ██║   ██║  ██║███████║╚██████╔╝██║
+   ╚═╝   ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝
+```
+
+Then ask the user for the following information:
 
 1. **Issue Title**: Ask "Issueのタイトルは何ですか？"
 2. **Tasks**: Ask "どのようなタスクを実行したいですか？（1行に1つずつタスクを記載してください）"
