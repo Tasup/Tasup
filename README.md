@@ -48,22 +48,44 @@ cd Tasup
 
 ### スラッシュコマンド
 
-#### `/issue-progress`
+#### `/create-issue`
 
-GitHub IssueのステータスをGitHub Projects V2で「In progress」に更新します。
+新しいGitHub Issueを作成します。
 
 使用方法:
-1. Claude Codeで `/issue-progress` を実行
-2. Issue URLを入力
-3. 自動的にステータスが「In progress」に更新されます
+1. Claude Codeで `/create-issue` を実行
+2. Issueのタイトルを入力
+3. タスクを1行ずつ入力（複数可）
+4. プレビューを確認
+5. 承認後、自動的にIssueが作成されます
+
+処理フロー:
+1. ユーザーにタイトルとタスクを質問
+2. タスクをチェックリスト形式でフォーマット
+3. プレビューを表示して確認
+4. `gh issue create` コマンドでIssueを作成
+5. 作成されたIssue URLを表示
+6. 次のステップとして `/implement-issue` の実行を案内
+
+#### `/implement-issue`
+
+GitHub Issueの実装を計画・実行します。
+
+使用方法:
+1. Claude Codeで `/implement-issue` を実行
+2. GitHub Issue URLを入力
+3. 自動的にブランチが作成され、ステータスが更新されます
+4. 実装計画を確認
+5. 承認後、実装が開始されます
 
 処理フロー:
 1. Issue URLから情報を抽出 (owner/repo/number)
-2. GraphQL APIでプロジェクト情報を取得
-3. 現在のステータスを確認
-4. 既に「In progress」の場合はスキップ
-5. ステータスを更新
-6. 更新結果を検証
+2. `gh issue view` でIssue詳細を取得
+3. ブランチ名を生成（`{repository_name}-{issue_number}-{implement-content}` 形式、40文字以内）
+4. `git checkout -b` で新しいブランチを作成
+5. `auto-update-issue-status` スキルでステータスを "In Progress" に更新
+6. TodoWriteツールで実装タスクリストを作成
+7. ユーザー確認後、実装を実行
 
 ### スキル
 
@@ -116,13 +138,13 @@ gh issue view ISSUE_NUMBER --json projectItems
 ```
 .claude/
 ├── commands/           # スラッシュコマンド
-│   └── issue-progress.md
+│   ├── create-issue.md
+│   └── implement-issue.md
 ├── skills/            # カスタムスキル
 │   ├── auto-update-issue-status/
 │   │   └── SKILL.md
-│   ├── update-issue-status-from-todo-to-in-progress/
+│   └── update-issue-status-from-todo-to-in-progress/
 │   │   └── SKILL.md
-│   └── gh-commands.md
 └── settings.local.json # 承認済みコマンド設定
 ```
 
