@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Tasupは、GitHub Projects V2とGitHub Issuesの統合を管理するためのClaude Code設定リポジトリ。主にGitHub CLIコマンドを使用して、Issueのステータスを自動的に更新するワークフローを提供。
+Tasupは、GitHub Projects V2とJiraの統合を管理するためのClaude Code設定リポジトリ。GitHub CLIコマンドとAtlassian MCP Serverを使用して、Issueやチケットのステータスを自動的に更新するワークフローを提供。
 
 ## Common Commands
 
@@ -80,6 +80,12 @@ Location: `.claude/skills/update-issue-status-from-todo-to-in-progress/SKILL.md`
 
 GitHub Issueのステータスを任意のステータスへ更新するスキル。複数プロジェクト対応で、Issueが複数のプロジェクトに紐づいている場合、すべてのプロジェクトのステータスを一括更新する。ユーザーがインタラクティブにステータスを選択でき、エラーハンドリングと検証を含む。
 
+#### Skill: `auto-update-jira-status`
+
+Location: `.claude/skills/jira/auto-update-jira-status/SKILL.md`
+
+Jira Issueのステータスを次の段階へ自動的に更新するスキル (TODO→進行中→完了)。Atlassian MCP Serverを使用してJira APIと連携し、ワークフローの遷移を実行する。ブランチを切るタイミングでの自動ステータス更新に最適。8ステップのプロセスで実装されており、エラーハンドリングと検証を含む。
+
 ### 承認済みコマンド
 
 `.claude/settings.local.json`で以下のコマンドを自動承認：
@@ -88,15 +94,50 @@ GitHub Issueのステータスを任意のステータスへ更新するスキ�
 - `Bash(gh:*)` - GitHub CLI操作
 - `Bash(chmod:*)` - ファイルパーミッション変更
 - `Bash(bash:*)` - シェルスクリプト実行
-- `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)`, `Bash(git checkout:*)` - Git操作
+- `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)`, `Bash(git checkout:*)`, `Bash(git fetch:*)`, `Bash(git merge:*)` - Git操作
 - `Bash(cat:*)` - ファイル内容表示
 - `Bash(tree:*)` - ディレクトリ構造表示
-- `Skill(update-issue-status-from-todo-to-in-progress)` - 任意ステータス更新スキル
-- `Skill(auto-update-issue-status)` - 自動ステータス更新スキル
+- `Skill(update-issue-status-from-todo-to-in-progress)` - 任意ステータス更新スキル（GitHub）
+- `Skill(auto-update-issue-status)` - 自動ステータス更新スキル（GitHub）
+- `Skill(auto-update-jira-status)` - 自動ステータス更新スキル（Jira）
+- `mcp__atlassian__getJiraIssue` - Jiraチケット取得
+
+## Jira Integration
+
+### Jira Management with Atlassian MCP
+
+Atlassian MCP Serverを使用してJiraと統合：
+
+```bash
+# Jiraチケットの情報を取得
+mcp__atlassian__getJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey: "KEY-123")
+
+# 利用可能な遷移を取得
+mcp__atlassian__getTransitionsForJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey: "KEY-123")
+
+# ステータスを遷移
+mcp__atlassian__transitionJiraIssue(cloudId: "site.atlassian.net", issueIdOrKey: "KEY-123", transition: {id: "11"})
+```
+
+### 必要な前提条件
+
+- Atlassian MCP Serverが設定されていること（`.mcp.json`で設定）
+- Jiraへの認証が完了していること
+- 対象チケットへのアクセス権限
+
+### Jiraステータス更新のワークフロー
+
+ブランチを切るタイミングでJiraチケットのステータスを自動更新：
+
+1. Jiraチケット URLから情報を抽出
+2. 現在のステータスを取得
+3. 利用可能な遷移を取得
+4. 次のステータスへの遷移を実行
+5. 更新を検証
 
 ## GitHub Projects V2 Integration
 
-このリポジトリの主な目的は、GitHub Projects V2のステータス管理を自動化。
+このリポジトリの主な目的は、GitHub Projects V2とJiraのステータス管理を自動化。
 
 ### 必要な前提条件
 
