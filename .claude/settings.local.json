@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(gh:*)"
     ],
     "deny": [],
     "ask": []
